@@ -1,0 +1,17 @@
+steps:
+    - name: 'gcr.io/cloud-builders/docker'
+      args: ['build', '--network=cloudbuild', '-t', 'gcr.io/$PROJECT_ID/${_NAME}', './']
+      id: build
+    - name: 'gcr.io/cloud-builders/docker'
+      args: ['push', 'gcr.io/$PROJECT_ID/${_NAME}']
+      id: push
+      waitFor:
+          - build
+    - name: 'gcr.io/cloud-builders/gcloud'
+      args: ['run', 'deploy', '${_NAME}', '--image', 'gcr.io/$PROJECT_ID/${_NAME}', '--region=${_REGION}']
+      id: deploy
+      waitFor:
+          - push
+substitutions:
+    _NAME: go-eventarc-generic
+    _REGION: us-central1
